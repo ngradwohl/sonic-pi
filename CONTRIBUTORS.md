@@ -37,6 +37,7 @@ The following organisations have kindly contributed to Sonic Pi:
 * [pi-top](https://pi-top.com)
 * [Norfolk & Norwich Festival Bridge](https://nnfestival.org.uk/festival-bridge/)
 * [Emute Lab at the University of Sussex](https://www.emutelab.org)
+* [Trading & Consulting 'H.P.C.' GmbH](hpc.at)
 
 
 ## Inspiration
@@ -49,13 +50,13 @@ projects:
 * Andrew Sorensen  - [Extempore](http://extempore.moso.com.au)
 * James McCartney - [SuperCollider](https://supercollider.github.io)
 * Jeff Rose - [Overtone](https://overtone.github.com)
+* Joe Armstrong - [Erlang](https://www.erlang.org)
 * Linda Liukas - [Hello Ruby](http://www.helloruby.com/)
 * Matz (Yukihiro Matsumoto まつもとゆきひろ) - [Ruby](https://www.ruby-lang.org)
 * Rich Hickey - [Clojure](https://clojure.org)
 * Seymour Papert - [Logo](https://en.wikipedia.org/wiki/Logo_(programming_language))
 * The Scratch Team - [Scratch](https://scratch.mit.edu)
 * Thor Magnusson - [ixi lang](http://www.ixi-audio.net/content/body_software_ixilang.html)
-* Joe Armstrong - [Erlang](https://www.erlang.org)
 
 
 ## Patreon Supporters
@@ -84,6 +85,7 @@ especially the following individuals who have been remarkably generous:
 * [Mark Rendle](https://twitter.com/markrendle)
 * [Martin McDermott](https://twitter.com/marv_mcd)
 * [Michael Hunger](https://twitter.com/mesirii)
+* [Ole Friis Østergaard](https://github.com/olefriis)
 * [Paul Williams](https://pcwilliams.design)
 * [Pit Noack](http://www.maschinennah.de/)
 * [Richard Buckley](https://burgundycomputing.com)
