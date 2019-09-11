@@ -80,6 +80,12 @@ class SonicPiScintilla : public QsciScintilla
     void dragEnterEvent(QDragEnterEvent *pEvent);
     void dropEvent(QDropEvent *pEvent);
     void dragMoveEvent(QDragMoveEvent *event);
+
+    QKeySequence ctrlKey(char key);
+    QKeySequence metaKey(char key);
+    QKeySequence shiftMetaKey(char key);
+    QKeySequence ctrlMetaKey(char key);
+
     bool event(QEvent *evt);
     bool autoIndent;
     QMutex *mutex;

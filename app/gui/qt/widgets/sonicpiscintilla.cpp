@@ -114,6 +114,87 @@ SonicPiScintilla::SonicPiScintilla(SonicPiLexer *lexer, SonicPiTheme *theme, QSt
   addKeyBinding(settings, QsciCommand::DeleteWordLeft, Qt::Key_Backspace | SPi_META);
   addKeyBinding(settings, QsciCommand::DeleteWordRight, Qt::Key_D | SPi_META);
 
+
+  //transpose chars
+  QShortcut *transposeChars = new QShortcut(ctrlKey('t'), this);
+  connect (transposeChars, SIGNAL(activated()), this, SLOT(transposeChars())) ;
+
+  //move line or selection up and down
+  QShortcut *moveLineUp = new QShortcut(ctrlMetaKey('p'), this);
+  connect (moveLineUp, SIGNAL(activated()), this, SLOT(moveLineOrSelectionUp())) ;
+
+  QShortcut *moveLineDown = new QShortcut(ctrlMetaKey('n'), this);
+  connect (moveLineDown, SIGNAL(activated()), this, SLOT(moveLineOrSelectionDown())) ;
+
+
+  // Font zooming
+  QShortcut *fontZoom = new QShortcut(metaKey('='), this);
+  connect (fontZoom, SIGNAL(activated()), this, SLOT(zoomFontIn()));
+
+  QShortcut *fontZoom2 = new QShortcut(metaKey('+'), this);
+  connect (fontZoom2, SIGNAL(activated()), this, SLOT(zoomFontIn()));
+
+
+  QShortcut *fontZoomOut = new QShortcut(metaKey('-'), this);
+  connect (fontZoomOut, SIGNAL(activated()), this, SLOT(zoomFontOut()));
+
+  QShortcut *fontZoomOut2 = new QShortcut(metaKey('_'), this);
+  connect (fontZoomOut2, SIGNAL(activated()), this, SLOT(zoomFontOut()));
+
+  //set Mark
+#ifdef Q_OS_MAC
+  QShortcut *setMark = new QShortcut(QKeySequence("Meta+Space"), this);
+#else
+  QShortcut *setMark = new QShortcut(QKeySequence("Ctrl+Space"), this);
+#endif
+  connect (setMark, SIGNAL(activated()), this, SLOT(setMark())) ;
+
+  //quick nav by jumping up and down 1 lines at a time
+  QShortcut *forwardOneLine = new QShortcut(ctrlKey('p'), this);
+  connect(forwardOneLine, SIGNAL(activated()), this, SLOT(forwardOneLine()));
+  QShortcut *backOneLine = new QShortcut(ctrlKey('n'), this);
+  connect(backOneLine, SIGNAL(activated()), this, SLOT(backOneLine()));
+
+  //quick nav by jumping up and down 10 lines at a time
+  QShortcut *forwardTenLines = new QShortcut(shiftMetaKey('u'), this);
+  connect(forwardTenLines, SIGNAL(activated()), this, SLOT(forwardTenLines()));
+  QShortcut *backTenLines = new QShortcut(shiftMetaKey('d'), this);
+  connect(backTenLines, SIGNAL(activated()), this, SLOT(backTenLines()));
+
+  //cut to end of line
+  QShortcut *cutToEndOfLine = new QShortcut(ctrlKey('k'), this);
+  connect(cutToEndOfLine, SIGNAL(activated()), this, SLOT(cutLineFromPoint()));
+
+  //Emacs live copy and cut
+  QShortcut *copyToBuffer = new QShortcut(metaKey(']'), this);
+  connect(copyToBuffer, SIGNAL(activated()), this, SLOT(copyClear()));
+
+  QShortcut *cutToBufferLive = new QShortcut(ctrlKey(']'), this);
+  connect(cutToBufferLive, SIGNAL(activated()), this, SLOT(sp_cut()));
+
+  // Standard cut
+  QShortcut *cutToBuffer = new QShortcut(ctrlKey('x'), this);
+  connect(cutToBuffer, SIGNAL(activated()), this, SLOT(sp_cut()));
+
+  // paste
+  QShortcut *pasteToBufferWin = new QShortcut(ctrlKey('v'), this);
+  connect(pasteToBufferWin, SIGNAL(activated()), this, SLOT(sp_paste()));
+  QShortcut *pasteToBuffer = new QShortcut(metaKey('v'), this);
+  connect(pasteToBuffer, SIGNAL(activated()), this, SLOT(sp_paste()));
+  QShortcut *pasteToBufferEmacs = new QShortcut(ctrlKey('y'), this);
+  connect(pasteToBufferEmacs, SIGNAL(activated()), this, SLOT(sp_paste()));
+
+
+  //upcase next word
+  QShortcut *upcaseWord= new QShortcut(metaKey('u'), this);
+  connect(upcaseWord, SIGNAL(activated()), this, SLOT(upcaseWordOrSelection()));
+
+  //downcase next word
+  QShortcut *downcaseWord= new QShortcut(metaKey('l'), this);
+  connect(downcaseWord, SIGNAL(activated()), this, SLOT(downcaseWordOrSelection()));
+
+
+
   standardCommands()->readSettings(settings);
 
   this->setMatchedBraceBackgroundColor(theme->color("MatchedBraceBackground"));
@@ -664,3 +745,41 @@ void SonicPiScintilla::sp_cut() {
   deselect();
   mutex->unlock();
 }
+
+QKeySequence SonicPiScintilla::ctrlKey(char key)
+{
+#ifdef Q_OS_MAC
+    return QKeySequence(QString("Meta+%1").arg(key));
+#else
+    return QKeySequence(QString("Ctrl+%1").arg(key));
+#endif
+}
+
+// Cmd on Mac, Alt everywhere else
+QKeySequence SonicPiScintilla::metaKey(char key)
+{
+#ifdef Q_OS_MAC
+    return QKeySequence(QString("Ctrl+%1").arg(key));
+#else
+    return QKeySequence(QString("Alt+%1").arg(key));
+#endif
+}
+
+QKeySequence SonicPiScintilla::shiftMetaKey(char key)
+{
+#ifdef Q_OS_MAC
+    return QKeySequence(QString("Shift+Ctrl+%1").arg(key));
+#else
+    return QKeySequence(QString("Shift+alt+%1").arg(key));
+#endif
+}
+
+QKeySequence SonicPiScintilla::ctrlMetaKey(char key)
+{
+#ifdef Q_OS_MAC
+    return QKeySequence(QString("Ctrl+Meta+%1").arg(key));
+#else
+    return QKeySequence(QString("Ctrl+alt+%1").arg(key));
+#endif
+}
+

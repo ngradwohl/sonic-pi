@@ -568,17 +568,9 @@ void MainWindow::setupWindowStructure() {
         QShortcut *loadBufferShortcut = new QShortcut(shiftMetaKey('o'), workspace);
         connect (loadBufferShortcut, SIGNAL(activated()), this, SLOT(loadFile())) ;
 
-
-        //transpose chars
-        QShortcut *transposeChars = new QShortcut(ctrlKey('t'), workspace);
-        connect (transposeChars, SIGNAL(activated()), workspace, SLOT(transposeChars())) ;
-
-        //move line or selection up and down
-        QShortcut *moveLineUp = new QShortcut(ctrlMetaKey('p'), workspace);
-        connect (moveLineUp, SIGNAL(activated()), workspace, SLOT(moveLineOrSelectionUp())) ;
-
-        QShortcut *moveLineDown = new QShortcut(ctrlMetaKey('n'), workspace);
-        connect (moveLineDown, SIGNAL(activated()), workspace, SLOT(moveLineOrSelectionDown())) ;
+        //comment line
+        QShortcut *toggleLineComment= new QShortcut(metaKey('/'), this);
+        connect(toggleLineComment, SIGNAL(activated()), this, SLOT(toggleCommentInCurrentWorkspace()));
 
         // Contextual help
         QShortcut *contextHelp = new QShortcut(ctrlKey('i'), workspace);
@@ -587,81 +579,12 @@ void MainWindow::setupWindowStructure() {
         QShortcut *contextHelp2 = new QShortcut(QKeySequence("F1"), workspace);
         connect (contextHelp2, SIGNAL(activated()), this, SLOT(helpContext()));
 
-
-        // Font zooming
-        QShortcut *fontZoom = new QShortcut(metaKey('='), workspace);
-        connect (fontZoom, SIGNAL(activated()), workspace, SLOT(zoomFontIn()));
-
-        QShortcut *fontZoom2 = new QShortcut(metaKey('+'), workspace);
-        connect (fontZoom2, SIGNAL(activated()), workspace, SLOT(zoomFontIn()));
-
-
-        QShortcut *fontZoomOut = new QShortcut(metaKey('-'), workspace);
-        connect (fontZoomOut, SIGNAL(activated()), workspace, SLOT(zoomFontOut()));
-
-        QShortcut *fontZoomOut2 = new QShortcut(metaKey('_'), workspace);
-        connect (fontZoomOut2, SIGNAL(activated()), workspace, SLOT(zoomFontOut()));
-
-        //set Mark
-#ifdef Q_OS_MAC
-        QShortcut *setMark = new QShortcut(QKeySequence("Meta+Space"), workspace);
-#else
-        QShortcut *setMark = new QShortcut(QKeySequence("Ctrl+Space"), workspace);
-#endif
-        connect (setMark, SIGNAL(activated()), workspace, SLOT(setMark())) ;
-
         //escape
         QShortcut *escape = new QShortcut(ctrlKey('g'), workspace);
         QShortcut *escape2 = new QShortcut(QKeySequence("Escape"), workspace);
         connect(escape, SIGNAL(activated()), this, SLOT(escapeWorkspaces()));
         connect(escape2, SIGNAL(activated()), this, SLOT(escapeWorkspaces()));
 
-        //quick nav by jumping up and down 1 lines at a time
-        QShortcut *forwardOneLine = new QShortcut(ctrlKey('p'), workspace);
-        connect(forwardOneLine, SIGNAL(activated()), workspace, SLOT(forwardOneLine()));
-        QShortcut *backOneLine = new QShortcut(ctrlKey('n'), workspace);
-        connect(backOneLine, SIGNAL(activated()), workspace, SLOT(backOneLine()));
-
-        //quick nav by jumping up and down 10 lines at a time
-        QShortcut *forwardTenLines = new QShortcut(shiftMetaKey('u'), workspace);
-        connect(forwardTenLines, SIGNAL(activated()), workspace, SLOT(forwardTenLines()));
-        QShortcut *backTenLines = new QShortcut(shiftMetaKey('d'), workspace);
-        connect(backTenLines, SIGNAL(activated()), workspace, SLOT(backTenLines()));
-
-        //cut to end of line
-        QShortcut *cutToEndOfLine = new QShortcut(ctrlKey('k'), workspace);
-        connect(cutToEndOfLine, SIGNAL(activated()), workspace, SLOT(cutLineFromPoint()));
-
-        //Emacs live copy and cut
-        QShortcut *copyToBuffer = new QShortcut(metaKey(']'), workspace);
-        connect(copyToBuffer, SIGNAL(activated()), workspace, SLOT(copyClear()));
-
-        QShortcut *cutToBufferLive = new QShortcut(ctrlKey(']'), workspace);
-        connect(cutToBufferLive, SIGNAL(activated()), workspace, SLOT(sp_cut()));
-
-        // Standard cut
-        QShortcut *cutToBuffer = new QShortcut(ctrlKey('x'), workspace);
-        connect(cutToBuffer, SIGNAL(activated()), workspace, SLOT(sp_cut()));
-
-        // paste
-        QShortcut *pasteToBufferWin = new QShortcut(ctrlKey('v'), workspace);
-        connect(pasteToBufferWin, SIGNAL(activated()), workspace, SLOT(sp_paste()));
-        QShortcut *pasteToBuffer = new QShortcut(metaKey('v'), workspace);
-        connect(pasteToBuffer, SIGNAL(activated()), workspace, SLOT(sp_paste()));
-        QShortcut *pasteToBufferEmacs = new QShortcut(ctrlKey('y'), workspace);
-        connect(pasteToBufferEmacs, SIGNAL(activated()), workspace, SLOT(sp_paste()));
-
-        //comment line
-        QShortcut *toggleLineComment= new QShortcut(metaKey('/'), workspace);
-        connect(toggleLineComment, SIGNAL(activated()), this, SLOT(toggleCommentInCurrentWorkspace()));
-
-        //upcase next word
-        QShortcut *upcaseWord= new QShortcut(metaKey('u'), workspace);
-        connect(upcaseWord, SIGNAL(activated()), workspace, SLOT(upcaseWordOrSelection()));
-
-        //downcase next word
-        QShortcut *downcaseWord= new QShortcut(metaKey('l'), workspace);
-        connect(downcaseWord, SIGNAL(activated()), workspace, SLOT(downcaseWordOrSelection()));
 
         QString w = QString(tr("| %1 |")).arg(QString::number(ws));
         workspaces[ws] = workspace;
@@ -1927,59 +1850,43 @@ void MainWindow::clearOutputPanels()
     errorPane->clear();
 }
 
-QKeySequence MainWindow::ctrlKey(char key)
-{
 #ifdef Q_OS_MAC
-    return QKeySequence(QString("Meta+%1").arg(key));
+    #define SP_CTRL "Meta+%1"
+    #define SP_META "Ctrl+%1"
+    #define SP_SHIFTMETA "Shift+Ctrl+%1"
+    #define SP_CTRLMETA "Ctrl+Meta+%1"
+    #define SP_CTRLSHIFTMETA "Shift+Ctrl+Meta+%1"
+    #define TOOLTIP_STRSHIFTMETA "%1 (⇧⌘%2)"
+    #define TOOLTIP_STRMETA "%1 (⌘%2)"
 #else
-    return QKeySequence(QString("Ctrl+%1").arg(key));
+    #define SP_CTRL "Ctrl+%1"
+    #define SP_META "Alt+%1"
+    #define SP_SHIFTMETA "Shift+Alt+%1"
+    #define SP_CTRLMETA "Ctrl+Alt+%1"
+    #define SP_CTRLSHIFTMETA "Shift+Ctrl+Alt+%1"
+    #define TOOLTIP_STRSHIFTMETA "%1 (Shift-alt-%2)"
+    #define TOOLTIP_STRMETA "%1 (alt-%2)"
 #endif
+
+QKeySequence MainWindow::ctrlKey(char key) {
+    return QKeySequence(QString(SP_CTRL).arg(key));
 }
 
 // Cmd on Mac, Alt everywhere else
-QKeySequence MainWindow::metaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Ctrl+%1").arg(key));
-#else
-    return QKeySequence(QString("alt+%1").arg(key));
-#endif
+QKeySequence MainWindow::metaKey(char key) {
+    return QKeySequence(QString(SP_META).arg(key));
 }
 
-Qt::Modifier MainWindow::metaKeyModifier()
-{
-#ifdef Q_OS_MAC
-    return Qt::CTRL;
-#else
-    return Qt::ALT;
-#endif
+QKeySequence MainWindow::shiftMetaKey(char key) {
+    return QKeySequence(QString(SP_SHIFTMETA).arg(key));
 }
 
-QKeySequence MainWindow::shiftMetaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Shift+Ctrl+%1").arg(key));
-#else
-    return QKeySequence(QString("Shift+alt+%1").arg(key));
-#endif
+QKeySequence MainWindow::ctrlMetaKey(char key) {
+    return QKeySequence(QString(SP_CTRLMETA).arg(key));
 }
 
-QKeySequence MainWindow::ctrlMetaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Ctrl+Meta+%1").arg(key));
-#else
-    return QKeySequence(QString("Ctrl+alt+%1").arg(key));
-#endif
-}
-
-QKeySequence MainWindow::ctrlShiftMetaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Shift+Ctrl+Meta+%1").arg(key));
-#else
-    return QKeySequence(QString("Shift+Ctrl+alt+%1").arg(key));
-#endif
+QKeySequence MainWindow::ctrlShiftMetaKey(char key) {
+    return QKeySequence(QString(SP_CTRLSHIFTMETA).arg(key));
 }
 
 char MainWindow::int2char(int i){
@@ -1987,19 +1894,11 @@ char MainWindow::int2char(int i){
 }
 
 QString MainWindow::tooltipStrShiftMeta(char key, QString str) {
-#ifdef Q_OS_MAC
-    return QString("%1 (⇧⌘%2)").arg(str).arg(key);
-#else
-    return QString("%1 (Shift-alt-%2)").arg(str).arg(key);
-#endif
+    return QString(TOOLTIP_STRSHIFTMETA).arg(str).arg(key);
 }
 
 QString MainWindow::tooltipStrMeta(char key, QString str) {
-#ifdef Q_OS_MAC
-    return QString("%1 (⌘%2)").arg(str).arg(key);
-#else
-    return QString("%1 (alt-%2)").arg(str).arg(key);
-#endif
+    return QString(TOOLTIP_STRMETA).arg(str).arg(key);
 }
 
 void MainWindow::updateAction(QAction *action, QShortcut *sc, QString tooltip,  QString desc = "")

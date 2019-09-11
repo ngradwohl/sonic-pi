@@ -240,7 +240,6 @@ signals:
                 int len);
         QListWidget *createHelpTab(QString name);
         QKeySequence metaKey(char key);
-        Qt::Modifier metaKeyModifier();
         QKeySequence shiftMetaKey(char key);
         QKeySequence ctrlMetaKey(char key);
         QKeySequence ctrlShiftMetaKey(char key);
