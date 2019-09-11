@@ -89,7 +89,8 @@ HEADERS  += mainwindow.h \
             osc/sonic_pi_tcp_osc_server.h \
             model/sonicpitheme.h \
             model/settings.h \
-            visualizer/scope.h
+            visualizer/scope.h \
+            keycodes.h
 
 TRANSLATIONS = lang/sonic-pi_bg.ts \
     lang/sonic-pi_bs.ts \

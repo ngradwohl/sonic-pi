@@ -15,7 +15,7 @@
 #include <QPushButton>
 #include <QSignalMapper>
 #include <QVBoxLayout>
-
+#include "keycodes.h"
 /**
  * Default Constructor
  */
@@ -445,14 +445,8 @@ QGroupBox* SettingsWidget::createUpdatePrefsTab() {
     return update_prefs_box;
 }
 
-
-// TODO utils?
 QString SettingsWidget::tooltipStrShiftMeta(char key, QString str) {
-#ifdef Q_OS_MAC
-    return QString("%1 (⇧⌘%2)").arg(str).arg(key);
-#else
-    return QString("%1 (Shift-alt-%2)").arg(str).arg(key);
-#endif
+    return QString(TOOLTIP_STRSHIFTMETA).arg(str).arg(key);
 }
 
 void SettingsWidget::updateScopeNames( std::vector<QString> names ) {

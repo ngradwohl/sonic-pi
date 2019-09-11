@@ -23,6 +23,8 @@
 #include <Qsci/qscilexer.h>
 #include <QCheckBox>
 
+#include "keycodes.h"
+
 SonicPiScintilla::SonicPiScintilla(SonicPiLexer *lexer, SonicPiTheme *theme, QString fileName, OscSender *oscSender, bool autoIndent)
   : QsciScintilla()
 {
@@ -746,40 +748,20 @@ void SonicPiScintilla::sp_cut() {
   mutex->unlock();
 }
 
-QKeySequence SonicPiScintilla::ctrlKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Meta+%1").arg(key));
-#else
-    return QKeySequence(QString("Ctrl+%1").arg(key));
-#endif
+QKeySequence SonicPiScintilla::ctrlKey(char key) {
+    return QKeySequence(QString(SP_CTRL).arg(key));
 }
 
 // Cmd on Mac, Alt everywhere else
-QKeySequence SonicPiScintilla::metaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Ctrl+%1").arg(key));
-#else
-    return QKeySequence(QString("Alt+%1").arg(key));
-#endif
+QKeySequence SonicPiScintilla::metaKey(char key) {
+    return QKeySequence(QString(SP_META).arg(key));
 }
 
-QKeySequence SonicPiScintilla::shiftMetaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Shift+Ctrl+%1").arg(key));
-#else
-    return QKeySequence(QString("Shift+alt+%1").arg(key));
-#endif
+QKeySequence SonicPiScintilla::shiftMetaKey(char key) {
+    return QKeySequence(QString(SP_SHIFTMETA).arg(key));
 }
 
-QKeySequence SonicPiScintilla::ctrlMetaKey(char key)
-{
-#ifdef Q_OS_MAC
-    return QKeySequence(QString("Ctrl+Meta+%1").arg(key));
-#else
-    return QKeySequence(QString("Ctrl+alt+%1").arg(key));
-#endif
+QKeySequence SonicPiScintilla::ctrlMetaKey(char key) {
+    return QKeySequence(QString(SP_CTRLMETA).arg(key));
 }
 
