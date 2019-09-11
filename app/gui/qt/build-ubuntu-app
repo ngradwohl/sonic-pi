@@ -123,5 +123,9 @@ cd ${SP_APP_SRC}
 cp -f utils/ruby_help.tmpl utils/ruby_help.h
 ../../server/ruby/bin/qt-doc.rb -o utils/ruby_help.h
 lrelease SonicPi.pro
-qmake -qt=qt5 SonicPi.pro
+mkdir -p build
+cd build
+qmake -qt=qt5 ../SonicPi.pro
 make
+cp sonic-pi ..
+cd ..
