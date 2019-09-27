@@ -69,6 +69,7 @@ SOURCES += main.cpp \
            widgets/sonicpiscintilla.cpp \
            widgets/sonicpilexer.cpp \
            widgets/settingswidget.cpp \
+           widgets/sessionwidget.cpp \
            model/sonicpitheme.cpp \
            visualizer/scope.cpp
 
@@ -78,6 +79,7 @@ HEADERS  += mainwindow.h \
             widgets/sonicpilexer.h \
             widgets/sonicpiscintilla.h \
             widgets/settingswidget.h \
+            widgets/sessionwidget.h \
             utils/sonicpiapis.h \
             utils/ruby_help.h \
             osc/oscpkt.hh \

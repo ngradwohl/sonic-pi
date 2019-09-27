@@ -91,6 +91,16 @@ void sleep(int x) { Sleep((x)*1000); }
 
 #include "mainwindow.h"
 
+
+/*
+ * TODO: introduce sessoin 
+ * move osc server to session 
+ * 
+ *
+ *
+ */
+
+
 #ifdef Q_OS_MAC
 MainWindow::MainWindow(QApplication &app, bool i18n, QMainWindow* splash)
 #else
@@ -487,6 +497,8 @@ void MainWindow::setupWindowStructure() {
     errorPane = new QTextBrowser;
     errorPane->setOpenExternalLinks(true);
 
+    //TODO -> Session
+
     // Window layout
     tabs = new QTabWidget();
     tabs->setTabsClosable(false);
@@ -545,7 +557,6 @@ void MainWindow::setupWindowStructure() {
     connect(prefsWidget, SIGNAL(visibilityChanged(bool)), this, SLOT(updatePrefsIcon()));
     bool auto_indent = piSettings->auto_indent_on_run;
     for(int ws = 0; ws < workspace_max; ws++) {
-        std::string s;
         QString fileName = QString("workspace_" ) + QString::fromStdString(number_name(ws));
 
         //TODO: this is only here to ensure auto_indent_on_run is
@@ -589,7 +600,7 @@ void MainWindow::setupWindowStructure() {
 
 
         QString w = QString(tr("| %1 |")).arg(QString::number(ws));
-        workspaces[ws] = workspace;
+        workspaces[ws] = workspace; // TODO remove
         tabs->addTab(workspace, w);
     }
 
@@ -1276,7 +1287,7 @@ QString MainWindow::currentTabLabel()
     return tabs->tabText(tabs->currentIndex());
 }
 
-
+//TODO  -> Workspace
 bool MainWindow::loadFile()
 {
     QString selfilter = QString("%1 (*.rb *.txt)").arg(tr("Buffer files"));
@@ -1294,6 +1305,7 @@ bool MainWindow::loadFile()
     }
 }
 
+// TODO -> workspace
 bool MainWindow::saveAs()
 {
     QString selfilter = QString("%1 (*.rb *.txt)").arg(tr("Buffer files"));
@@ -1319,6 +1331,8 @@ void MainWindow::resetErrorPane() {
     errorPane->hide();
 }
 
+
+// TODO -> Session
 void MainWindow::runBufferIdx(int idx)
 {
     QMetaObject::invokeMethod(tabs, "setCurrentIndex", Q_ARG(int, idx));
@@ -1339,6 +1353,8 @@ void MainWindow::showBufferCapacityError() {
     showError("<h2 class=\"syntax_error_description\"><pre>GUI Error: Buffer Full</pre></h2><pre class=\"error_msg\"> Your code buffer has reached capacity. <br/> Please remove some code before continuing. <br/><span class=\"error_line\"> For working with very large buffers use: <br/> run_file \"/path/to/buffer.rb\"</span></pre>");
 }
 
+
+// TODO -> Session?
 void MainWindow::runCode()
 {
     scopeInterface->resume();
@@ -1417,6 +1433,7 @@ void MainWindow::runCode()
 
 }
 
+//TODO: workspace
 void MainWindow::zoomCurrentWorkspaceIn()
 {
     statusBar()->showMessage(tr("Zooming In..."), 2000);
@@ -1424,6 +1441,7 @@ void MainWindow::zoomCurrentWorkspaceIn()
     ws->zoomFontIn();
 }
 
+// TODO workspace
 void MainWindow::zoomCurrentWorkspaceOut()
 {
     statusBar()->showMessage(tr("Zooming Out..."), 2000);
@@ -1431,6 +1449,8 @@ void MainWindow::zoomCurrentWorkspaceOut()
     ws->zoomFontOut();
 }
 
+
+// TODO session/workspace?
 void MainWindow::beautifyCode()
 {
     statusBar()->showMessage(tr("Beautifying..."), 2000);
@@ -2049,6 +2069,8 @@ QString MainWindow::readFile(QString name)
     return st.readAll();
 }
 
+
+// TODO -> info widget?
 void MainWindow::createInfoPane() {
     std::cout << "[GUI] - creating info panel" << std::endl;
     QTabWidget* infoTabs = new QTabWidget(this);
@@ -2292,6 +2314,7 @@ void MainWindow::writeSettings()
     settings.setValue("windowGeom", saveGeometry());
 }
 
+// TODO Workspace
 void MainWindow::loadFile(const QString &fileName, SonicPiScintilla* &text)
 {
     QFile file(fileName);
@@ -2311,6 +2334,7 @@ void MainWindow::loadFile(const QString &fileName, SonicPiScintilla* &text)
     statusBar()->showMessage(tr("File loaded..."), 2000);
 }
 
+// TODO WOrkspace
 bool MainWindow::saveFile(const QString &fileName, SonicPiScintilla* text)
 {
     QFile file(fileName);
@@ -2338,6 +2362,7 @@ bool MainWindow::saveFile(const QString &fileName, SonicPiScintilla* text)
     return true;
 }
 
+// TODO: session?
 SonicPiScintilla* MainWindow::filenameToWorkspace(std::string filename)
 {
     std::string s;
