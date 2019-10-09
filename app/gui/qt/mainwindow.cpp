@@ -1899,8 +1899,7 @@ void MainWindow::createShortcuts()
     new QShortcut(QKeySequence("F12"),this, SLOT(toggleScopePaused()));
 }
 
-void  MainWindow::createToolBar()
-{
+void  MainWindow::createToolBar() {
     std::cout << "[GUI] - creating tool bar" << std::endl;
     // Run
     runAct = new QAction(theme->getRunIcon(), tr("Run"), this);
@@ -2020,8 +2019,7 @@ void  MainWindow::createToolBar()
 
 }
 
-QString MainWindow::readFile(QString name)
-{
+QString MainWindow::readFile(QString name) {
     QFile file(name);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         std::cerr << "[GUI] - could not open file " << name.toStdString() << "\n";
@@ -2033,18 +2031,14 @@ QString MainWindow::readFile(QString name)
     return st.readAll();
 }
 
-
-// TODO -> info widget?
 void MainWindow::createInfoPane() {
     infoWidget = new InfoWidget();
-
     connect(infoWidget, SIGNAL(closed()), this, SLOT(about()));
     QAction *closeInfoAct = new QAction(this);
     closeInfoAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
     connect(closeInfoAct, SIGNAL(triggered()), this, SLOT(about()));
     infoWidget->addAction(closeInfoAct);
 }
-
 
 /**
  * Toggle record Icon while recording is active (triggert by rec_flash_timer)
