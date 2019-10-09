@@ -26,6 +26,8 @@ public:
     // zoom?
     void nextTab();
     void prevTab();
+    int count();
+    int currentIndex();
     // set error marker?
 
 private slots:

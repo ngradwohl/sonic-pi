@@ -1,14 +1,20 @@
 #include "sessionwidget.h"
 #include <QTabWidget>
 #include <QTabBar>
+#include <QGridLayout>
 #include "widgets/sonicpiscintilla.h"
 
 SessionWidget::SessionWidget( QWidget *parent ) {
+    QGridLayout *grid = new QGridLayout;
+
     // Window layout
     tabs = new QTabWidget();
     tabs->setTabsClosable(false);
     tabs->setMovable(false);
     tabs->setTabPosition(QTabWidget::South);
+
+    grid->addWidget(tabs, 0, 0);
+    setLayout(grid);
 }
 
 SessionWidget::~SessionWidget() {
@@ -70,4 +76,12 @@ void SessionWidget::showTabs( bool visibility ) {
     } else {
         bar->hide();
     }
+}
+
+int SessionWidget::count() {
+    return tabs->count();
+}
+
+int SessionWidget::currentIndex() {
+    return tabs->currentIndex();
 }

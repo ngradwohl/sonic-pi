@@ -58,6 +58,8 @@ class SonicPiTheme;
 class SonicPiLexer;
 class SonicPiSettings;
 
+class SessionWidget;
+
 struct help_page {
     QString title;
     QString keyword;
@@ -129,7 +131,6 @@ signals:
         void mixerHpfEnable(float freq);
         void mixerHpfDisable();
         void mixerLpfDisable();
-        QString currentTabLabel();
         bool loadFile();
         bool saveAs();
         void about();
@@ -183,7 +184,6 @@ signals:
         void updateButtonVisibility();
         void toggleButtonVisibility();
         void setLineMarkerinCurrentWorkspace(int num);
-        void setUpdateInfoText(QString t);
         void updateVersionNumber(QString version, int version_num, QString latest_version, int latest_version_num, QDate last_checked_date, QString platform);
         void requestVersion();
         void heartbeatOSC();
@@ -276,7 +276,6 @@ signals:
 
         bool i18n;
         static const int workspace_max = 10;
-        SonicPiScintilla *workspaces[workspace_max];
         QWidget *prefsCentral;
         QTabWidget *docsCentral;
         SonicPiLog *outputPane;
@@ -296,7 +295,6 @@ signals:
         bool hidingDocPane;
         bool restoreDocPane;
 
-        QTabWidget *tabs;
         QProcess *serverProcess;
 
         SonicPiLexer *lexer;
@@ -341,6 +339,8 @@ signals:
 
         OscSender *oscSender;
         QSet<QString> cuePaths;
+
+        SessionWidget *session;
 
 };
 

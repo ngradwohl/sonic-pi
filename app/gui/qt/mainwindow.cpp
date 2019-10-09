@@ -64,7 +64,7 @@
 #include "widgets/infowidget.h"
 #include "model/settings.h"
 #include "widgets/settingswidget.h"
-
+#include "widgets/sessionwidget.h"
 #include "utils/ruby_help.h"
 
 #include "keycodes.h"
@@ -251,8 +251,7 @@ MainWindow::MainWindow(QApplication &app, bool i18n, QSplashScreen* splash)
         std::cout << "[GUI] - Critical Error. Unable to connect to server.." << std::endl;
         startupError("GUI was unable to connect to the Ruby server.");
     }
-
-    app.setActiveWindow(tabs->currentWidget());
+    app.setActiveWindow(session->getCurrentWorkspace());
 
 }
 
@@ -499,11 +498,7 @@ void MainWindow::setupWindowStructure() {
 
     //TODO -> Session
 
-    // Window layout
-    tabs = new QTabWidget();
-    tabs->setTabsClosable(false);
-    tabs->setMovable(false);
-    tabs->setTabPosition(QTabWidget::South);
+    session = new SessionWidget();
 
     lexer->setAutoIndentStyle(SonicPiScintilla::AiMaintain);
 
@@ -600,8 +595,7 @@ void MainWindow::setupWindowStructure() {
 
 
         QString w = QString(tr("| %1 |")).arg(QString::number(ws));
-        workspaces[ws] = workspace; // TODO remove
-        tabs->addTab(workspace, w);
+        session->addWorkspace(workspace, w);
     }
 
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(changeTab(int)));
@@ -733,7 +727,7 @@ void MainWindow::setupWindowStructure() {
     connect(docWidget, SIGNAL(visibilityChanged(bool)), this, SLOT(toggleHelpIcon()));
 
     mainWidgetLayout = new QVBoxLayout;
-    mainWidgetLayout->addWidget(tabs);
+    mainWidgetLayout->addWidget(session);
     mainWidgetLayout->addWidget(errorPane);
     mainWidgetLayout->setMargin(0);
     mainWidget = new QWidget;
@@ -748,14 +742,15 @@ void MainWindow::setupWindowStructure() {
 void MainWindow::escapeWorkspaces() {
     resetErrorPane();
 
-    for (int w=0; w < workspace_max; w++) {
-        workspaces[w]->escapeAndCancelSelection();
-        workspaces[w]->clearLineMarkers();
+    for (int w=0; w < session->count(); w++) {
+        SonicPiScintilla* ws = session->getWorkspace(w);
+        ws->escapeAndCancelSelection();
+        ws->clearLineMarkers();
     }
 }
 
 void MainWindow::changeTab(int id){
-    tabs->setCurrentIndex(id);
+    session->changeTab(id);
 }
 
 void MainWindow::toggleFullScreenMode() {
@@ -862,14 +857,7 @@ void MainWindow::toggleTabsVisibility() {
 }
 
 void MainWindow::updateTabsVisibility(){
-    QTabBar *tabBar = tabs->findChild<QTabBar *>();
-
-    if(piSettings->show_tabs) {
-        tabBar->show();
-    }
-    else{
-        tabBar->hide();
-    }
+    session->showTabs( piSettings->show_tabs );
 }
 
 void MainWindow::toggleButtonVisibility() {
@@ -926,7 +914,7 @@ void MainWindow::completeSnippetOrIndentCurrentLineOrSelection(SonicPiScintilla*
 }
 
 void MainWindow::toggleCommentInCurrentWorkspace() {
-    SonicPiScintilla *ws = (SonicPiScintilla*)tabs->currentWidget();
+    SonicPiScintilla *ws = session->getCurrentWorkspace();
     toggleComment(ws);
 }
 
@@ -1211,7 +1199,7 @@ void MainWindow::replaceBuffer(QString id, QString content, int line, int index,
 
 void MainWindow::replaceBufferIdx(int buf_idx, QString content, int line, int index, int first_line) {
     //  statusBar()->showMessage(tr("Replacing Buffer..."), 1000);
-    SonicPiScintilla* ws = workspaces[buf_idx];
+    SonicPiScintilla* ws = session->getWorkspace(buf_idx);
     ws->replaceBuffer(content, line, index, first_line);
 }
 
@@ -1265,7 +1253,7 @@ void MainWindow::saveWorkspaces()
     std::cout << "[GUI] - saving workspaces" << std::endl;
 
     for(int i = 0; i < workspace_max; i++) {
-        std::string code = workspaces[i]->text().toStdString();
+        std::string code = session->getWorkspace(i)->text().toStdString();
         Message msg("/save-buffer");
         msg.pushStr(guiID.toStdString());
         std::string s = "workspace_" + number_name(i);
@@ -1282,11 +1270,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-QString MainWindow::currentTabLabel()
-{
-    return tabs->tabText(tabs->currentIndex());
-}
-
 //TODO  -> Workspace
 bool MainWindow::loadFile()
 {
@@ -1297,7 +1280,8 @@ bool MainWindow::loadFile()
     if(!fileName.isEmpty()){
         QFileInfo fi=fileName;
         settings.setValue("lastDir", fi.dir().absolutePath());
-        SonicPiScintilla* p = (SonicPiScintilla*)tabs->currentWidget();
+        SonicPiScintilla* p = session->getCurrentWorkspace();
+
         loadFile(fileName, p);
         return true;
     } else {
@@ -1319,7 +1303,7 @@ bool MainWindow::saveAs()
         if (!fileName.contains(QRegExp("\\.[a-z]+$"))) {
             fileName = fileName + ".txt";
         }
-        return saveFile(fileName, (SonicPiScintilla*)tabs->currentWidget());
+        return saveFile(fileName, session->getCurrentWorkspace() );
     } else {
         return false;
     }
@@ -1331,11 +1315,10 @@ void MainWindow::resetErrorPane() {
     errorPane->hide();
 }
 
-
-// TODO -> Session
 void MainWindow::runBufferIdx(int idx)
 {
-    QMetaObject::invokeMethod(tabs, "setCurrentIndex", Q_ARG(int, idx));
+    session->changeTab(idx);
+//    QMetaObject::invokeMethod(tabs, "setCurrentIndex", Q_ARG(int, idx));
     runCode();
 }
 
@@ -1372,7 +1355,7 @@ void MainWindow::runCode()
     outputPane->setTextCursor(newOutputCursor);
 
     update();
-    SonicPiScintilla *ws = (SonicPiScintilla*)tabs->currentWidget();
+    SonicPiScintilla *ws = session->getCurrentWorkspace();
 
     QString code = ws->text();
 
@@ -1413,7 +1396,7 @@ void MainWindow::runCode()
     Message msg("/save-and-run-buffer");
     msg.pushStr(guiID.toStdString());
 
-    std::string filename = ((SonicPiScintilla*)tabs->currentWidget())->fileName.toStdString();
+    std::string filename = session->getCurrentWorkspace()->fileName.toStdString();
     msg.pushStr(filename);
 
     if(piSettings->clear_output_on_run){
@@ -1437,7 +1420,7 @@ void MainWindow::runCode()
 void MainWindow::zoomCurrentWorkspaceIn()
 {
     statusBar()->showMessage(tr("Zooming In..."), 2000);
-    SonicPiScintilla* ws = ((SonicPiScintilla*)tabs->currentWidget());
+    SonicPiScintilla* ws = session->getCurrentWorkspace();
     ws->zoomFontIn();
 }
 
@@ -1445,7 +1428,7 @@ void MainWindow::zoomCurrentWorkspaceIn()
 void MainWindow::zoomCurrentWorkspaceOut()
 {
     statusBar()->showMessage(tr("Zooming Out..."), 2000);
-    SonicPiScintilla* ws = ((SonicPiScintilla*)tabs->currentWidget());
+    SonicPiScintilla* ws = session->getCurrentWorkspace();
     ws->zoomFontOut();
 }
 
@@ -1454,7 +1437,7 @@ void MainWindow::zoomCurrentWorkspaceOut()
 void MainWindow::beautifyCode()
 {
     statusBar()->showMessage(tr("Beautifying..."), 2000);
-    SonicPiScintilla* ws = ((SonicPiScintilla*)tabs->currentWidget());
+    SonicPiScintilla* ws = session->getCurrentWorkspace();
     std::string code = ws->text().toStdString();
     int line = 0;
     int index = 0;
@@ -1462,7 +1445,7 @@ void MainWindow::beautifyCode()
     int first_line = ws->firstVisibleLine();
     Message msg("/buffer-beautify");
     msg.pushStr(guiID.toStdString());
-    std::string filename = ((SonicPiScintilla*)tabs->currentWidget())->fileName.toStdString();
+    std::string filename = ws->fileName.toStdString();
     msg.pushStr(filename);
     msg.pushStr(code);
     msg.pushInt32(line);
@@ -1638,7 +1621,7 @@ void MainWindow::help() {
 void MainWindow::helpContext() {
     if (!docWidget->isVisible())
         docWidget->show();
-    SonicPiScintilla *ws = ((SonicPiScintilla*)tabs->currentWidget());
+    SonicPiScintilla *ws = session->getCurrentWorkspace();
     QString selection = ws->selectedText();
     if (selection == "") { // get current word instead
         int line, pos;
@@ -1778,7 +1761,8 @@ void MainWindow::updateColourTheme(){
     outputPane->setStyleSheet("");
     outputWidget->setStyleSheet("");
     prefsWidget->setStyleSheet("");
-    tabs->setStyleSheet("");
+    // TODO -> session
+    //tabs->setStyleSheet("");
     //TODO inject to settings Widget
     //prefTabs->setStyleSheet("");
     docsCentral->setStyleSheet("");
@@ -1800,8 +1784,8 @@ void MainWindow::updateColourTheme(){
     scopeInterface->refresh();
     scopeWidget->update();
 
-    for(int i=0; i < tabs->count(); i++){
-        SonicPiScintilla *ws = (SonicPiScintilla *)tabs->widget(i);
+    for(int i=0; i < session->count(); i++){
+        SonicPiScintilla *ws = session->getWorkspace(i);
         ws->setFrameShape(QFrame::NoFrame);
         ws->setStyleSheet(appStyling);
 
@@ -1819,8 +1803,8 @@ void MainWindow::updateColourTheme(){
 
 void MainWindow::changeShowLineNumbers(){
     bool show = piSettings->show_line_numbers;
-    for(int i=0; i < tabs->count(); i++){
-        SonicPiScintilla *ws = (SonicPiScintilla *)tabs->widget(i);
+    for(int i=0; i < session->count(); i++){
+        SonicPiScintilla *ws = session->getWorkspace(i);
         if (show) {
             ws->showLineNumbers();
         } else {
@@ -1848,7 +1832,7 @@ void MainWindow::wheelEvent(QWheelEvent *event)
 {
 #if defined(Q_OS_WIN)
     if (event->modifiers() & Qt::ControlModifier) {
-        SonicPiScintilla* ws = ((SonicPiScintilla*)tabs->currentWidget());
+        SonicPiScintilla* ws = session->getCurrentWorkspace();
         if (event->angleDelta().y() > 0)
             ws->zoomFontIn();
         else
@@ -2190,18 +2174,19 @@ void MainWindow::restoreWindows() {
     QSize size = settings.value("size", QSize(400, 400)).toSize();
 
     int index = settings.value("workspace", 0).toInt();
-    if (index < tabs->count())
-        tabs->setCurrentIndex(index);
+    if (index < session->count())
+        session->changeTab(index);
 
-    for (int w=0; w < workspace_max; w++) {
+    for (int w=0; w < session->count(); w++) {
         // default zoom is 13
         int zoom = settings.value(QString("workspace%1zoom").arg(w), 13)
             .toInt();
         if (zoom < -5) zoom = -5;
         if (zoom > 20) zoom = 20;
-
-        workspaces[w]->setProperty("zoom", QVariant(zoom));
-        workspaces[w]->zoomTo(zoom);
+        SonicPiScintilla* ws = session->getWorkspace(w);
+   
+        ws->setProperty("zoom", QVariant(zoom));
+        ws->zoomTo(zoom);
     }
 
     docsplit->restoreState(settings.value("docsplitState").toByteArray());
@@ -2302,11 +2287,10 @@ void MainWindow::writeSettings()
         settings.setValue("prefs/scope/show-"+name.toLower(), piSettings->isScopeActive(name));
     }
 
-    settings.setValue("workspace", tabs->currentIndex());
+    settings.setValue("workspace", session->currentIndex());
 
-    for (int w=0; w < workspace_max; w++) {
-        settings.setValue(QString("workspace%1zoom").arg(w),
-                workspaces[w]->property("zoom"));
+    for (int w=0; w < session->count(); w++) {
+        settings.setValue(QString("workspace%1zoom").arg(w), session->getWorkspace(w)->property("zoom"));
     }
 
     settings.setValue("docsplitState", docsplit->saveState());
@@ -2315,8 +2299,7 @@ void MainWindow::writeSettings()
 }
 
 // TODO Workspace
-void MainWindow::loadFile(const QString &fileName, SonicPiScintilla* &text)
-{
+void MainWindow::loadFile(const QString &fileName, SonicPiScintilla* &text) {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly)) {
         QMessageBox::warning(this, tr("Sonic Pi"),
@@ -2335,8 +2318,7 @@ void MainWindow::loadFile(const QString &fileName, SonicPiScintilla* &text)
 }
 
 // TODO WOrkspace
-bool MainWindow::saveFile(const QString &fileName, SonicPiScintilla* text)
-{
+bool MainWindow::saveFile(const QString &fileName, SonicPiScintilla* text) {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly)) {
         QMessageBox::warning(this, tr("Sonic Pi"),
@@ -2363,22 +2345,19 @@ bool MainWindow::saveFile(const QString &fileName, SonicPiScintilla* text)
 }
 
 // TODO: session?
-SonicPiScintilla* MainWindow::filenameToWorkspace(std::string filename)
-{
+SonicPiScintilla* MainWindow::filenameToWorkspace(std::string filename) {
     std::string s;
 
-    for(int i = 0; i < workspace_max; i++) {
+    for(int i = 0; i < session->count(); i++) {
         s = "workspace_" + number_name(i);
         if(filename == s) {
-            return workspaces[i];
+            return session->getWorkspace(i);
         }
     }
-    return workspaces[0];
+    return session->getWorkspace(0);
 }
 
-void MainWindow::onExitCleanup()
-{
-
+void MainWindow::onExitCleanup() {
     setupLogPathAndRedirectStdOut();
     std::cout << "[GUI] - stopping OSC server" << std::endl;
     sonicPiOSCServer->stop();
@@ -2515,32 +2494,18 @@ void MainWindow::docScrollDown() {
 }
 
 void MainWindow::tabNext() {
-    int index = tabs->currentIndex();
-    if (index == tabs->count()-1)
-        index = 0;
-    else
-        index++;
-    QMetaObject::invokeMethod(tabs, "setCurrentIndex", Q_ARG(int, index));
+    session->nextTab();
 }
 
 void MainWindow::tabPrev() {
-    int index = tabs->currentIndex();
-    if (index == 0)
-        index = tabs->count() - 1;
-    else
-        index--;
-    QMetaObject::invokeMethod(tabs, "setCurrentIndex", Q_ARG(int, index));
+    session->prevTab();
 }
 
 void MainWindow::setLineMarkerinCurrentWorkspace(int num) {
     if(num > 0) {
-        SonicPiScintilla *ws = (SonicPiScintilla*)tabs->currentWidget();
+        SonicPiScintilla *ws = session->getCurrentWorkspace();
         ws->setLineErrorMarker(num - 1);
     }
-}
-//TODO remove
-void MainWindow::setUpdateInfoText(QString t) {
-    //  update_info->setText(t);
 }
 
 void MainWindow::addUniversalCopyShortcuts(QTextEdit *te){
