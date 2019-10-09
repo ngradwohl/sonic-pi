@@ -93,10 +93,8 @@ void sleep(int x) { Sleep((x)*1000); }
 
 
 /*
- * TODO: introduce sessoin 
+ * TODO:
  * move osc server to session 
- * 
- *
  *
  */
 
@@ -496,8 +494,6 @@ void MainWindow::setupWindowStructure() {
     errorPane = new QTextBrowser;
     errorPane->setOpenExternalLinks(true);
 
-    //TODO -> Session
-
     session = new SessionWidget();
 
     lexer->setAutoIndentStyle(SonicPiScintilla::AiMaintain);
@@ -736,7 +732,6 @@ void MainWindow::setupWindowStructure() {
     mainWidget->setLayout(mainWidgetLayout);
     mainWidget->setObjectName("mainWidget");
     setCentralWidget(mainWidget);
-
 }
 
 void MainWindow::escapeWorkspaces() {
@@ -1479,24 +1474,21 @@ void MainWindow::check_for_updates_now() {
     sendOSC(msg);
 }
 
-void MainWindow::enableCheckUpdates()
-{
+void MainWindow::enableCheckUpdates() {
     statusBar()->showMessage(tr("Enabling update checking..."), 2000);
     Message msg("/enable-update-checking");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::disableCheckUpdates()
-{
+void MainWindow::disableCheckUpdates() {
     statusBar()->showMessage(tr("Disabling update checking..."), 2000);
     Message msg("/disable-update-checking");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::mixerHpfEnable(float freq)
-{
+void MainWindow::mixerHpfEnable(float freq) {
     statusBar()->showMessage(tr("Enabling Mixer HPF..."), 2000);
     Message msg("/mixer-hpf-enable");
     msg.pushStr(guiID.toStdString());
@@ -1504,16 +1496,14 @@ void MainWindow::mixerHpfEnable(float freq)
     sendOSC(msg);
 }
 
-void MainWindow::mixerHpfDisable()
-{
+void MainWindow::mixerHpfDisable() {
     statusBar()->showMessage(tr("Disabling Mixer HPF..."), 2000);
     Message msg("/mixer-hpf-disable");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::mixerLpfEnable(float freq)
-{
+void MainWindow::mixerLpfEnable(float freq) {
     statusBar()->showMessage(tr("Enabling Mixer LPF..."), 2000);
     Message msg("/mixer-lpf-enable");
     msg.pushStr(guiID.toStdString());
@@ -1521,48 +1511,42 @@ void MainWindow::mixerLpfEnable(float freq)
     sendOSC(msg);
 }
 
-void MainWindow::mixerLpfDisable()
-{
+void MainWindow::mixerLpfDisable() {
     statusBar()->showMessage(tr("Disabling Mixer LPF..."), 2000);
     Message msg("/mixer-lpf-disable");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::mixerInvertStereo()
-{
+void MainWindow::mixerInvertStereo() {
     statusBar()->showMessage(tr("Enabling Inverted Stereo..."), 2000);
     Message msg("/mixer-invert-stereo");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::mixerStandardStereo()
-{
+void MainWindow::mixerStandardStereo() {
     statusBar()->showMessage(tr("Enabling Standard Stereo..."), 2000);
     Message msg("/mixer-standard-stereo");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::mixerMonoMode()
-{
+void MainWindow::mixerMonoMode() {
     statusBar()->showMessage(tr("Mono Mode..."), 2000);
     Message msg("/mixer-mono-mode");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::mixerStereoMode()
-{
+void MainWindow::mixerStereoMode() {
     statusBar()->showMessage(tr("Stereo Mode..."), 2000);
     Message msg("/mixer-stereo-mode");
     msg.pushStr(guiID.toStdString());
     sendOSC(msg);
 }
 
-void MainWindow::stopCode()
-{
+void MainWindow::stopCode() {
     stopRunningSynths();
     statusBar()->showMessage(tr("Stopping..."), 2000);
 }
@@ -1595,14 +1579,14 @@ void MainWindow::scope() {
 void MainWindow::about() {
     // todo: this is returning true even after the window disappears
     // Qt::Tool windows get closed automatically when app loses focus
-    if(infoWidg->isVisible()) {
-        infoWidg->hide();
+    if(infoWidget->isVisible()) {
+        infoWidget->hide();
 
     } else {
-        infoWidg->raise();
-        infoWidg->show();
+        infoWidget->raise();
+        infoWidget->show();
     }
-    infoAct->setIcon( theme->getInfoIcon( infoWidg->isVisible()));
+    infoAct->setIcon( theme->getInfoIcon( infoWidget->isVisible()));
 }
 
 void MainWindow::toggleHelpIcon() {
@@ -1725,7 +1709,7 @@ void MainWindow::toggleIcons() {
     helpAct->setIcon(theme->getHelpIcon(docWidget->isVisible()));
     recAct->setIcon(theme->getRecIcon(false, false));
     prefsAct->setIcon(theme->getPrefsIcon(prefsWidget->isVisible()));
-    infoAct->setIcon(theme->getInfoIcon(infoWidg->isVisible()));
+    infoAct->setIcon(theme->getInfoIcon(infoWidget->isVisible()));
     scopeAct->setIcon(theme->getScopeIcon(scopeWidget->isVisible()));
 
     if (piSettings->theme == SonicPiTheme::DarkProMode ||
@@ -1746,16 +1730,12 @@ void MainWindow::updateColourTheme(){
     docPane->document()->setDefaultStyleSheet(css);
     docPane->reload();
 
-    foreach(QTextBrowser* pane, infoPanes) {
-        pane->document()->setDefaultStyleSheet(css);
-        pane->reload();
-    }
-
+    infoWidget->setDefaultStyleSheet(css);
     errorPane->document()->setDefaultStyleSheet(css);
 
     // clear stylesheets
     this->setStyleSheet("");
-    infoWidg->setStyleSheet("");
+    infoWidget->setStyleSheet("");
     mainWidget->setStyleSheet("");
     statusBar()->setStyleSheet("");
     outputPane->setStyleSheet("");
@@ -1776,7 +1756,7 @@ void MainWindow::updateColourTheme(){
     QString appStyling = theme->getAppStylesheet();
 
     this->setStyleSheet(appStyling);
-    infoWidg->setStyleSheet(appStyling);
+    infoWidget->setStyleSheet(appStyling);
 
     errorPane->setStyleSheet(theme->getErrorStylesheet());
     docsCentral->setStyleSheet(theme->getDocStylesheet());
@@ -2056,52 +2036,13 @@ QString MainWindow::readFile(QString name)
 
 // TODO -> info widget?
 void MainWindow::createInfoPane() {
-    std::cout << "[GUI] - creating info panel" << std::endl;
-    QTabWidget* infoTabs = new QTabWidget(this);
+    infoWidget = new InfoWidget();
 
-    QStringList urls, tabs;
-
-    urls << "qrc:///html/info.html"
-        << "qrc:///info/COMMUNITY.html"
-        << "qrc:///info/CORETEAM.html"
-        << "qrc:///info/CONTRIBUTORS.html"
-        << "qrc:///info/LICENSE.html"
-        << "qrc:///info/CHANGELOG.html";
-
-    tabs << tr("About")
-        << tr("Community")
-        << tr("Core Team")
-        << tr("Contributors")
-        << tr("License")
-        << tr("History");
-
-    for (int t=0; t < urls.size(); t++) {
-        QTextBrowser *pane = new QTextBrowser;
-        infoPanes.append(pane);
-        addUniversalCopyShortcuts(pane);
-        pane->setOpenExternalLinks(true);
-        pane->setSource(QUrl(urls[t]));
-        infoTabs->addTab(pane, tabs[t]);
-    }
-
-    infoTabs->setTabPosition(QTabWidget::South);
-
-    QBoxLayout *infoLayout = new QBoxLayout(QBoxLayout::LeftToRight);
-    infoLayout->addWidget(infoTabs);
-
-    infoWidg = new InfoWidget;
-    infoWidg->setWindowIcon(QIcon(":images/icon-smaller.png"));
-    infoWidg->setLayout(infoLayout);
-    infoWidg->setWindowFlags(Qt::Tool | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
-    infoWidg->setWindowTitle(tr("Sonic Pi - Info"));
-    infoWidg->setFixedSize(660, 640);
-
-    connect(infoWidg, SIGNAL(closed()), this, SLOT(about()));
-
+    connect(infoWidget, SIGNAL(closed()), this, SLOT(about()));
     QAction *closeInfoAct = new QAction(this);
     closeInfoAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
     connect(closeInfoAct, SIGNAL(triggered()), this, SLOT(about()));
-    infoWidg->addAction(closeInfoAct);
+    infoWidget->addAction(closeInfoAct);
 }
 
 

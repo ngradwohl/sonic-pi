@@ -15,8 +15,13 @@
 #define INFOWIDGET_H
 
 #include <QWidget>
+#include <QList>
+#include <QString>
 #include <QCloseEvent>
 
+class QTextBrowser;
+class QTextEdit;
+class QKeySequence;
 class InfoWidget : public QWidget
 {
     Q_OBJECT
@@ -26,9 +31,15 @@ signals:
 
 public:
     explicit InfoWidget(QWidget *parent = 0);
+    void setDefaultStyleSheet( QString css );
 
  private:
     void closeEvent(QCloseEvent *event);
+    void addUniversalCopyShortcuts(QTextEdit *te);
+    QKeySequence ctrlKey(char key);
+    QKeySequence metaKey(char key);
+    QList<QTextBrowser *> infoPanes;
+
 };
 
 #endif

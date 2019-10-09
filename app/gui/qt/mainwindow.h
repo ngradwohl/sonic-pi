@@ -310,8 +310,7 @@ signals:
         QCheckBox *studio_mode;
         QLineEdit   *user_token;
 
-        InfoWidget *infoWidg;
-        QList<QTextBrowser *> infoPanes;
+        InfoWidget *infoWidget;
         QTextEdit *startupPane;
         QVBoxLayout *mainWidgetLayout;
 
